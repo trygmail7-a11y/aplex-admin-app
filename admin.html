@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Aplex Share — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0c10; --bg2: #0f1117; --bg3: #161b27; --bg4: #1e2536;
+  --glass: rgba(255,255,255,0.04); --gb: rgba(255,255,255,0.08);
+  --accent: #3b82f6; --aglow: rgba(59,130,246,0.28); --accent2: #06b6d4;
+  --green: #10b981; --red: #ef4444; --yellow: #f59e0b;
+  --t1: #f1f5f9; --t2: #94a3b8; --t3: #475569;
+  --mono: 'Space Mono',monospace; --sans: 'DM Sans',sans-serif;
+  --r: 16px; --rs: 10px;
+}
+[data-theme="light"] {
+  --bg:#f0f4f8; --bg2:#fff; --bg3:#e8edf5; --bg4:#d8e0ec;
+  --glass:rgba(255,255,255,0.7); --gb:rgba(0,0,0,0.08);
+  --t1:#0f172a; --t2:#475569; --t3:#94a3b8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100vh;transition:background .3s,color .3s;}
+[data-theme="dark"] body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--gb);backdrop-filter:blur(20px);background:rgba(10,12,16,.88);}
+[data-theme="light"] header{background:rgba(240,244,248,.92);}
+.logo{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.logo-text{font-family:var(--mono);font-size:.95rem;font-weight:700;}.logo-text span{color:var(--accent);}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.theme-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--gb);background:var(--glass);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t2);transition:all .2s;}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+.logout-btn{padding:6px 14px;border-radius:999px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:.75rem;font-family:var(--mono);cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:var(--red);color:white;}
+.icon-sun,.icon-moon{display:none;}
+[data-theme="dark"] .icon-moon{display:block;}
+[data-theme="light"] .icon-sun{display:block;}
+
+/* MAIN */
+main{position:relative;z-index:5;max-width:800px;margin:0 auto;padding:24px 14px;}
+
+/* LOGIN PAGE */
+#login-page{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:20px;}
+.login-box{background:var(--glass);border:1px solid var(--gb);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;backdrop-filter:blur(20px);text-align:center;}
+.login-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.login-title{font-size:1.2rem;font-weight:700;margin-bottom:4px;}
+.login-sub{font-size:.78rem;color:var(--t3);font-family:var(--mono);margin-bottom:24px;}
+.login-err{font-size:.76rem;color:var(--red);font-family:var(--mono);margin-bottom:12px;display:none;}
+
+/* CARD */
+.card{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);padding:22px;backdrop-filter:blur(20px);position:relative;overflow:hidden;margin-bottom:16px;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);}
+.card-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.card-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(6,182,212,.2));border:1px solid rgba(59,130,246,.25);display:flex;align-items:center;justify-content:center;}
+.card-icon svg{width:15px;height:15px;}
+.card-title{font-size:.9rem;font-weight:600;}
+.card-sub{font-size:.72rem;color:var(--t3);font-family:var(--mono);}
+
+/* FORM */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.74rem;font-family:var(--mono);color:var(--t2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.04em;}
+.inp{background:var(--bg2);border:1.5px solid var(--gb);border-radius:var(--rs);padding:11px 14px;color:var(--t1);font-family:var(--mono);font-size:.82rem;outline:none;transition:border-color .2s;width:100%;}
+.inp::placeholder{color:var(--t3);}
+.inp:focus{border-color:var(--accent);}
+textarea.inp{resize:vertical;min-height:100px;font-size:.78rem;line-height:1.5;}
+
+/* BUTTONS */
+.btn{padding:11px 18px;border-radius:var(--rs);border:none;cursor:pointer;font-family:var(--sans);font-size:.86rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;box-shadow:0 4px 16px var(--aglow);}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-block{width:100%;justify-content:center;}
+.btn-ghost{background:var(--glass);border:1px solid var(--gb);color:var(--t2);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+
+/* SAVE STATUS */
+.save-status{font-size:.74rem;font-family:var(--mono);margin-top:10px;display:none;padding:8px 12px;border-radius:8px;}
+.save-status.success{background:rgba(16,185,129,.1);border:1px solid var(--green);color:var(--green);display:block;}
+.save-status.error{background:rgba(239,68,68,.1);border:1px solid var(--red);color:var(--red);display:block;}
+
+/* SECTION DIVIDER */
+.divider{height:1px;background:var(--gb);margin:4px 0 18px;}
+
+/* AD PREVIEW */
+.ad-preview{background:var(--bg3);border:1px dashed rgba(128,128,128,.25);border-radius:8px;padding:10px;margin-top:8px;font-size:.7rem;font-family:var(--mono);color:var(--t3);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center;}
+
+/* SUPABASE STATUS */
+.conn-status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.7rem;font-family:var(--mono);}
+.conn-status.connected{background:rgba(16,185,129,.1);border:1px solid var(--green);color:var(--green);}
+.conn-status.disconnected{background:rgba(239,68,68,.1);border:1px solid var(--red);color:var(--red);}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <div class="logo-text">Aplex<span>Share</span> <span style="color:var(--t3);font-size:.7rem;">Admin</span></div>
+  </div>
+  <div class="hdr-right">
+    <button class="theme-btn" onclick="toggleTheme()">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <button class="logout-btn" id="logout-btn" style="display:none;" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<!-- LOGIN PAGE -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="28" height="28"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <div class="login-title">Admin Login</div>
+    <div class="login-sub">Aplex Share Control Panel</div>
+    <div class="login-err" id="login-err">❌ Invalid credentials</div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="inp" id="login-user" type="text" placeholder="Enter username" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="inp" id="login-pass" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="15" height="15"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Login
+    </button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" style="display:none;">
+<main>
+
+  <!-- SUPABASE SETTINGS -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Supabase Settings</div>
+        <div class="card-sub">Database connection for ad config sync</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div class="conn-status disconnected" id="sb-status">
+        <div class="conn-dot"></div>
+        <span id="sb-status-text">Not Connected</span>
+      </div>
+      <button class="btn btn-ghost" style="padding:5px 12px;font-size:.74rem;" onclick="testSupabase()">Test Connection</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Supabase URL</label>
+      <input class="inp" id="sb-url" type="text" placeholder="https://xxxx.supabase.co"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Supabase Anon Key</label>
+      <input class="inp" id="sb-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."/>
+    </div>
+    <button class="btn btn-primary" onclick="saveSupabase()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save Supabase Settings
+    </button>
+    <div class="save-status" id="sb-save-status"></div>
+  </div>
+
+  <!-- AD SETTINGS -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Ad Settings</div>
+        <div class="card-sub">AdSense / AdMob code manage karo</div>
+      </div>
+    </div>
+
+    <!-- Banner Ad -->
+    <div class="form-group">
+      <label class="form-label">📣 Sticky Banner Ad (728×90)</label>
+      <div style="font-size:.68rem;color:var(--t3);font-family:var(--mono);margin-bottom:6px;">Bottom sticky banner — always visible</div>
+      <textarea class="inp" id="ad-banner" placeholder="Paste your AdSense/AdMob banner ad code here..."></textarea>
+      <div class="ad-preview" id="preview-banner">Banner Ad Preview</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Native Ad -->
+    <div class="form-group">
+      <label class="form-label">📣 Native Ad (320×90)</label>
+      <div style="font-size:.68rem;color:var(--t3);font-family:var(--mono);margin-bottom:6px;">Shown below progress bar during transfer</div>
+      <textarea class="inp" id="ad-native" placeholder="Paste your native ad code here..."></textarea>
+      <div class="ad-preview" id="preview-native">Native Ad Preview</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Interstitial Ad -->
+    <div class="form-group">
+      <label class="form-label">📣 Interstitial Ad (Full Screen)</label>
+      <div style="font-size:.68rem;color:var(--t3);font-family:var(--mono);margin-bottom:6px;">Shown after file transfer completes</div>
+      <textarea class="inp" id="ad-interstitial" placeholder="Paste your interstitial ad code here..."></textarea>
+      <div class="ad-preview" id="preview-interstitial">Interstitial Ad Preview</div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="saveAds()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Ad Settings
+      </button>
+      <button class="btn btn-ghost" onclick="clearAds()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        Clear All Ads
+      </button>
+    </div>
+    <div class="save-status" id="ad-save-status"></div>
+  </div>
+
+  <!-- INFO CARD -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div>
+        <div class="card-title">How it works</div>
+        <div class="card-sub">Ad sync system</div>
+      </div>
+    </div>
+    <div style="font-size:.78rem;color:var(--t2);line-height:1.8;font-family:var(--mono);">
+      1. Supabase settings save karo<br>
+      2. Ad codes paste karo aur save karo<br>
+      3. Aplex Share app automatically Supabase se ad codes fetch karega<br>
+      4. Koi bhi change turant sab users pe apply ho jaayega
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+// ============================================
+// CONFIG
+// ============================================
+const ADMIN_USER = 'Aplex Studios';
+const ADMIN_PASS = 'Aplex804404';
+const LS_SB_URL = 'aplexadmin_sb_url';
+const LS_SB_KEY = 'aplexadmin_sb_key';
+const LS_LOGGED = 'aplexadmin_logged';
+
+// ============================================
+// LOGIN
+// ============================================
+function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  const err = document.getElementById('login-err');
+
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    sessionStorage.setItem(LS_LOGGED, '1');
+    showAdmin();
+  } else {
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem(LS_LOGGED);
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('logout-btn').style.display = 'none';
+}
+
+function showAdmin() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+  document.getElementById('logout-btn').style.display = 'block';
+  loadSettings();
+}
+
+// Auto-login if session active
+window.addEventListener('load', () => {
+  const th = localStorage.getItem('aplexadmin_theme');
+  if (th) document.documentElement.setAttribute('data-theme', th);
+  if (sessionStorage.getItem(LS_LOGGED)) showAdmin();
+});
+
+// ============================================
+// SUPABASE SETTINGS
+// ============================================
+function saveSupabase() {
+  const url = document.getElementById('sb-url').value.trim();
+  const key = document.getElementById('sb-key').value.trim();
+
+  if (!url || !key) {
+    showStatus('sb-save-status', 'error', '❌ URL aur Key dono zaroori hain.');
+    return;
+  }
+
+  localStorage.setItem(LS_SB_URL, url);
+  localStorage.setItem(LS_SB_KEY, key);
+  showStatus('sb-save-status', 'success', '✅ Supabase settings saved!');
+}
+
+async function testSupabase() {
+  const url = document.getElementById('sb-url').value.trim() || localStorage.getItem(LS_SB_URL);
+  const key = document.getElementById('sb-key').value.trim() || localStorage.getItem(LS_SB_KEY);
+  const statusEl = document.getElementById('sb-status');
+  const statusTxt = document.getElementById('sb-status-text');
+
+  if (!url || !key) {
+    statusEl.className = 'conn-status disconnected';
+    statusTxt.textContent = 'Missing credentials';
+    return;
+  }
+
+  statusTxt.textContent = 'Testing...';
+
+  try {
+    const res = await fetch(`${url}/rest/v1/aplex_config?select=*&limit=1`, {
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`
+      }
+    });
+
+    if (res.ok || res.status === 406) {
+      statusEl.className = 'conn-status connected';
+      statusTxt.textContent = 'Connected ✓';
+    } else {
+      statusEl.className = 'conn-status disconnected';
+      statusTxt.textContent = 'Error: ' + res.status;
+    }
+  } catch(e) {
+    statusEl.className = 'conn-status disconnected';
+    statusTxt.textContent = 'Connection failed';
+  }
+}
+
+// ============================================
+// AD SETTINGS — Save to Supabase
+// ============================================
+async function saveAds() {
+  const url = localStorage.getItem(LS_SB_URL);
+  const key = localStorage.getItem(LS_SB_KEY);
+
+  const bannerCode = document.getElementById('ad-banner').value;
+  const nativeCode = document.getElementById('ad-native').value;
+  const interstitialCode = document.getElementById('ad-interstitial').value;
+
+  // Update previews
+  updatePreviews();
+
+  if (!url || !key) {
+    // Save to localStorage only
+    localStorage.setItem('aplex_ad_banner', bannerCode);
+    localStorage.setItem('aplex_ad_native', nativeCode);
+    localStorage.setItem('aplex_ad_interstitial', interstitialCode);
+    showStatus('ad-save-status', 'success', '✅ Saved locally (connect Supabase for sync)');
+    return;
+  }
+
+  // Save to Supabase
+  try {
+    const payload = {
+      key: 'ad_settings',
+      value: JSON.stringify({
+        banner: bannerCode,
+        native: nativeCode,
+        interstitial: interstitialCode,
+        updated: new Date().toISOString()
+      })
+    };
+
+    // Upsert
+    const res = await fetch(`${url}/rest/v1/aplex_config`, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok || res.status === 201) {
+      // Also save locally as cache
+      localStorage.setItem('aplex_ad_banner', bannerCode);
+      localStorage.setItem('aplex_ad_native', nativeCode);
+      localStorage.setItem('aplex_ad_interstitial', interstitialCode);
+      showStatus('ad-save-status', 'success', '✅ Ad settings saved to Supabase!');
+    } else {
+      const txt = await res.text();
+      showStatus('ad-save-status', 'error', '❌ Supabase error: ' + res.status);
+    }
+  } catch(e) {
+    showStatus('ad-save-status', 'error', '❌ Error: ' + e.message);
+  }
+}
+
+function clearAds() {
+  if (!confirm('Are you sure? All ad codes will be cleared.')) return;
+  document.getElementById('ad-banner').value = '';
+  document.getElementById('ad-native').value = '';
+  document.getElementById('ad-interstitial').value = '';
+  localStorage.removeItem('aplex_ad_banner');
+  localStorage.removeItem('aplex_ad_native');
+  localStorage.removeItem('aplex_ad_interstitial');
+  updatePreviews();
+  showStatus('ad-save-status', 'success', '✅ All ad codes cleared.');
+}
+
+// ============================================
+// LOAD SETTINGS
+// ============================================
+function loadSettings() {
+  // Load Supabase settings
+  const sbUrl = localStorage.getItem(LS_SB_URL) || '';
+  const sbKey = localStorage.getItem(LS_SB_KEY) || '';
+  document.getElementById('sb-url').value = sbUrl;
+  document.getElementById('sb-key').value = sbKey;
+
+  // Load ad codes
+  document.getElementById('ad-banner').value = localStorage.getItem('aplex_ad_banner') || '';
+  document.getElementById('ad-native').value = localStorage.getItem('aplex_ad_native') || '';
+  document.getElementById('ad-interstitial').value = localStorage.getItem('aplex_ad_interstitial') || '';
+
+  updatePreviews();
+
+  // Try to load from Supabase
+  if (sbUrl && sbKey) loadAdsFromSupabase(sbUrl, sbKey);
+}
+
+async function loadAdsFromSupabase(url, key) {
+  try {
+    const res = await fetch(`${url}/rest/v1/aplex_config?key=eq.ad_settings&select=value`, {
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const ads = JSON.parse(data[0].value);
+        document.getElementById('ad-banner').value = ads.banner || '';
+        document.getElementById('ad-native').value = ads.native || '';
+        document.getElementById('ad-interstitial').value = ads.interstitial || '';
+        updatePreviews();
+        document.getElementById('sb-status').className = 'conn-status connected';
+        document.getElementById('sb-status-text').textContent = 'Connected ✓';
+      }
+    }
+  } catch(e) {}
+}
+
+// ============================================
+// PREVIEW
+// ============================================
+function updatePreviews() {
+  const banner = document.getElementById('ad-banner').value;
+  const native = document.getElementById('ad-native').value;
+  const inter = document.getElementById('ad-interstitial').value;
+
+  document.getElementById('preview-banner').textContent = banner ? '✅ Banner ad code set' : 'No banner ad code';
+  document.getElementById('preview-native').textContent = native ? '✅ Native ad code set' : 'No native ad code';
+  document.getElementById('preview-interstitial').textContent = inter ? '✅ Interstitial ad code set' : 'No interstitial ad code';
+}
+
+// Live preview update
+['ad-banner','ad-native','ad-interstitial'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updatePreviews);
+});
+
+// ============================================
+// HELPERS
+// ============================================
+function showStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'save-status ' + type;
+  el.textContent = msg;
+  setTimeout(() => { el.className = 'save-status'; el.textContent = ''; }, 4000);
+}
+
+function toggleTheme() {
+  const h = document.documentElement;
+  const n = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  h.setAttribute('data-theme', n);
+  localStorage.setItem('aplexadmin_theme', n);
+}
+</script>
+</body>
+</html>
