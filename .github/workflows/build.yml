@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install sharp for image conversion
+        run: npm install sharp
+
       - name: Copy web files
         run: |
           mkdir -p www
@@ -40,6 +43,38 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Force replace all launcher icons with logo.png
+        run: |
+          node -e "
+          const sharp = require('sharp');
+          const fs = require('fs');
+          const path = require('path');
+          const base = 'android/app/src/main/res/';
+          const configs = [
+            { size: 48,  folder: 'mipmap-mdpi' },
+            { size: 72,  folder: 'mipmap-hdpi' },
+            { size: 96,  folder: 'mipmap-xhdpi' },
+            { size: 144, folder: 'mipmap-xxhdpi' },
+            { size: 192, folder: 'mipmap-xxxhdpi' }
+          ];
+          async function generate() {
+            for (const {size, folder} of configs) {
+              const dir = path.join(base, folder);
+              if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+              const files = ['ic_launcher.png','ic_launcher_round.png','ic_launcher_foreground.png'];
+              for (const file of files) {
+                await sharp('logo.png')
+                  .resize(size, size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } })
+                  .png()
+                  .toFile(path.join(dir, file));
+                console.log('Written: ' + folder + '/' + file);
+              }
+            }
+            console.log('All icons replaced!');
+          }
+          generate().catch(e => { console.error(e); process.exit(1); });
+          "
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
