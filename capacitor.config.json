@@ -1,0 +1,12 @@
+{
+  "appId": "in.aplexshare.admin",
+  "appName": "Aplex Admin",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#0a0c10"
+  }
+}
